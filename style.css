@@ -1,0 +1,158 @@
+
+.conteneur{
+	position: relative;
+	left: 100px;
+	width: 1000px;
+	height: 800px;
+	z-index: 0;
+}
+
+
+.logo {
+	position: absolute ;
+	top: 33%;
+	right: 15% ;
+	z-index: 2;
+}
+
+
+.gps { 
+	position: absolute; 
+	width: 100px;
+	height: 180px;
+	top: 28%;
+	right: 450px;
+	z-index: 3;
+    animation-name: floating;
+    animation-duration: 3s;
+    animation-iteration-count: infinite;
+	animation-timing-function: ease-in-out;
+}
+@keyframes floating {
+	from { transform: translate(0,  0px); }
+	65%  { transform: translate(0, 15px); }
+	to   { transform: translate(0, -0px); }    
+}
+
+.weel1{
+	position: absolute ;
+	top: 63%;
+	right: 40%;
+	z-index: 1;
+	animation-name: rotation1;
+}
+.weel2{
+	 position: absolute ;
+	 top: 54%;
+	 right: 20%;
+	 z-index: 1;
+	 animation-name: rotation3;
+}
+.weel3{
+	position: absolute ;
+	top: 57%;
+	right: 60%;
+	z-index: 1;
+	animation-name: rotation2;
+}
+
+#rotation1 {
+		-webkit-animation: rotation1 15s infinite linear;
+
+	}
+@-webkit-keyframes rotation1 {
+	from {
+		-webkit-transform: rotate(0deg);
+	}
+	to {
+		-webkit-transform: rotate(360deg);
+	}
+}
+#rotation2 {
+	-webkit-animation: rotation2 40s infinite linear;
+}
+@-webkit-keyframes rotation2 {
+	from {
+			-webkit-transform: rotate(360deg);
+	}
+	to {
+			-webkit-transform: rotate(0deg);
+	}
+}
+#rotation3 {
+	-webkit-animation: rotation3 40s infinite linear;
+}
+@-webkit-keyframes rotation2 {
+	from {
+			-webkit-transform: rotate(360deg);
+	}
+	to {
+			-webkit-transform: rotate(0deg);
+	}
+}
+
+
+
+.ciel{
+	width: 1000px;
+	height: 800px;
+	animation-name:jourNuit;
+	animation-duration:30s;
+	animation-iteration-count: infinite;
+	animation-timing-function:linear;
+
+  }
+  @keyframes jourNuit{
+	0%{background-color: rgb(87,93,111);}/*lever soleil*/
+	10%{background-color: rgba(122,158,182,1);}
+	20%{background-color: rgba(122,158,182,1);}
+	30%{background-color: rgba(119,181,254,1);}
+	40%{background-color: rgb(147,160,190);}
+	50%{background-color: rgb(147,160,190);}/*coucher soleil*/
+	60%{background-color: #303030;}/*début nuit*/
+	70%{background-color: #161616;}
+	80%{background-color: #161616;}
+	90%{background-color: #161616;}
+	100%{background-color: rgba(70,61,76,1);}/*fin nuit*/
+  }
+  .soleil{
+	width:100px;
+	height:100px;
+	background-color:#f39f18;
+	border-radius:50%;
+	position:absolute;
+	animation-name:jour;
+	animation-duration:30s;
+	animation-iteration-count: infinite;
+	animation-timing-function:linear;
+  }
+  
+  .lune{
+	width:100px;
+	height:100px;
+	background-color:#F4FEFE;
+	border-radius:50%;
+	position:absolute;
+	animation-name:nuit;
+	animation-duration:30s;
+	animation-iteration-count: infinite;
+	animation-timing-function:linear;
+  }
+
+  @keyframes jour{
+	0%{  top:55%; left:10%;   box-shadow: 0px 0px 52px 2px #f39f18;}/*lever soleil*/
+	10%{ top:35%;             box-shadow: 0px 0px 40px 18px #f39f18;}
+	15%{ top:25%;             box-shadow: 0px 0px 40px 18px #f39f18;}
+	25%{ top:10%;             box-shadow: 0px 0px 35px 8px #f39f18;} /*12uhr*/
+	35%{ top:25%;             box-shadow: 0px 0px 40px 18px #f39f18;}
+	40%{ top:35%;             box-shadow: 0px 0px 100px 20px #f39f18;}	
+	50%{ top:55%; left:70%;   box-shadow: 0px 0px 70px 2px #f39f18;}/*coucher soleil*/
+	100%{top:55%; left:10%;   box-shadow: 0px 0px 0px 2px #f39f18;}/*no soleil*/
+  }
+  
+  @keyframes nuit{
+	0%{    top:55%; left:70%;  box-shadow: 0px 0px 0px 0px rgba(250,250,250,1);}/*non lune*/
+	50%{   top:55%; left:10%;  box-shadow: 0px 0px 0px 0px rgba(250,250,250,1);}/*lever lune*/	
+	75%{   top:10%;            box-shadow: 0px 0px 100px 18px rgba(250,250,250,1);}	/*minuit*/
+	100%{  top:55%; left:70%;  box-shadow: 0px 0px 20px 0px rgba(250,250,250,1);}/*fin nuit*/
+  }

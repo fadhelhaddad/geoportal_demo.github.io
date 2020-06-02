@@ -1,0 +1,75 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.69/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.69/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+  <!--animated logo-->
+  <link rel="stylesheet" href="logo1.css">
+</head>
+<body>
+  <div id="cesiumContainer" style="position: fixed;  width: 100%;  height: 100%;  left: 0;  top: 0;">
+    <!--aniamtedlogo-->
+  <div class="loader" style="position: absolute; left: 30px; z-index: 1;">
+    <div class="face">
+      <div class="circle"></div>
+    </div>
+    <div class="face">
+      <div class="circle"></div>
+    </div>
+    <img src="logo1.png" width="28" height="28">
+  </div>
+  <!--aniamtedlogo-->
+  <script>
+   // Grant CesiumJS access to your ion assets
+Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkNjhlYTliNy01YTFkLTQ2MTMtOWViZC0yZjc0YThhN2YwNDIiLCJpZCI6MjcyNDgsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1ODkxOTQ4NjV9.aW8MugST-ydi9wibXYvzIcQpDEilcuc-3YgOQE6qQyw";
+
+var viewer = new Cesium.Viewer("cesiumContainer", {
+  terrainProvider: new Cesium.CesiumTerrainProvider({
+    url: Cesium.IonResource.fromAssetId(1),
+  }),
+});
+viewer.scene.globe.depthTestAgainstTerrain = true;
+
+var tileset = viewer.scene.primitives.add(
+  new Cesium.Cesium3DTileset({
+    url: Cesium.IonResource.fromAssetId(99968),
+  })
+);
+
+tileset.readyPromise
+  .then(function () {
+    viewer.zoomTo(tileset);
+
+    // Apply the default style if it exists
+    var extras = tileset.asset.extras;
+    if (
+      Cesium.defined(extras) &&
+      Cesium.defined(extras.ion) &&
+      Cesium.defined(extras.ion.defaultStyle)
+    ) {
+      tileset.style = new Cesium.Cesium3DTileStyle(extras.ion.defaultStyle);
+    }
+  })
+  .otherwise(function (error) {
+    console.log(error);
+  });
+  function colorByHeight() {
+tileset.style = new Cesium.Cesium3DTileStyle({
+color: {
+conditions: [
+["${Height} >= 50", "rgb(224, 226, 238)"],
+["${Height} >= 25", "rgb(252, 230, 200)"],
+["${Height} >= 10", "rgb(248, 176, 87)"],
+["${Height} >= 5", "rgb(198, 106, 11)"],
+["true", "rgb(127, 59, 8)"],
+],
+},
+});
+}
+colorByHeight();
+
+  
+  </script>
+  </div>
+</body>
+</html>
