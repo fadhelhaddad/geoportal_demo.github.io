@@ -24,7 +24,10 @@
    // Grant CesiumJS access to your ion assets
 Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkNjhlYTliNy01YTFkLTQ2MTMtOWViZC0yZjc0YThhN2YwNDIiLCJpZCI6MjcyNDgsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1ODkxOTQ4NjV9.aW8MugST-ydi9wibXYvzIcQpDEilcuc-3YgOQE6qQyw";
 
-var viewer = new Cesium.Viewer("cesiumContainer");
+var viewer = new Cesium.Viewer("cesiumContainer", {
+  shadows: true,
+});
+
 
 var tileset = viewer.scene.primitives.add(
   new Cesium.Cesium3DTileset({
