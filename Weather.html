@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <meta name="description" content="Layer imagery from multiple sources, including WMS servers, Bing Maps, ArcGIS Online, OpenStreetMaps, and more, and adjust the alpha of each independently.">
+    <meta name="cesium-sandcastle-labels" content="Showcases">
+    
+    <script type="text/javascript" src="../Sandcastle-header.js"></script>
+    <script>(function() {
+      'use strict';
+  
+      var defaultAction;
+      var bucket = window.location.href;
+      var pos = bucket.lastIndexOf('/');
+      if (pos > 0 && pos < (bucket.length - 1)) {
+          bucket = bucket.substring(pos + 1);
+      }
+  
+      window.Sandcastle = {
+          bucket : bucket,
+          declare : function() {
+          },
+          highlight : function() {
+          },
+          registered : [],
+          finishedLoading : function() {
+              window.Sandcastle.reset();
+  
+              if(defaultAction) {
+                  window.Sandcastle.highlight(defaultAction);
+                  defaultAction();
+                  defaultAction = undefined;
+              }
+  
+              document.body.className = document.body.className.replace(/(?:\s|^)sandcastle-loading(?:\s|$)/, ' ');
+          },
+          addToggleButton : function(text, checked, onchange, toolbarID) {
+              window.Sandcastle.declare(onchange);
+              var input = document.createElement('input');
+              input.checked = checked;
+              input.type = 'checkbox';
+              input.style.pointerEvents = 'none';
+              var label = document.createElement('label');
+              label.appendChild(input);
+              label.appendChild(document.createTextNode(text));
+              label.style.pointerEvents = 'none';
+              var button = document.createElement('button');
+              button.type = 'button';
+              button.className = 'cesium-button';
+              button.appendChild(label);
+  
+              button.onclick = function() {
+                  window.Sandcastle.reset();
+                  window.Sandcastle.highlight(onchange);
+                  input.checked = !input.checked;
+                  onchange(input.checked);
+              };
+  
+              document.getElementById(toolbarID || 'toolbar').appendChild(button);
+          },
+          addToolbarButton : function(text, onclick, toolbarID) {
+              window.Sandcastle.declare(onclick);
+              var button = document.createElement('button');
+              button.type = 'button';
+              button.className = 'cesium-button';
+              button.onclick = function() {
+                  window.Sandcastle.reset();
+                  window.Sandcastle.highlight(onclick);
+                  onclick();
+              };
+              button.textContent = text;
+              document.getElementById(toolbarID || 'toolbar').appendChild(button);
+          },
+          addDefaultToolbarButton : function(text, onclick, toolbarID) {
+              window.Sandcastle.addToolbarButton(text, onclick, toolbarID);
+              defaultAction = onclick;
+          },
+          addDefaultToolbarMenu : function(options, toolbarID) {
+              window.Sandcastle.addToolbarMenu(options, toolbarID);
+              defaultAction = options[0].onselect;
+          },
+          addToolbarMenu : function(options, toolbarID) {
+              var menu = document.createElement('select');
+              menu.className = 'cesium-button';
+              menu.onchange = function() {
+                  window.Sandcastle.reset();
+                  var item = options[menu.selectedIndex];
+                  if (item && typeof item.onselect === 'function') {
+                      item.onselect();
+                  }
+              };
+              document.getElementById(toolbarID || 'toolbar').appendChild(menu);
+  
+              if (!defaultAction && typeof options[0].onselect === 'function') {
+                  defaultAction = options[0].onselect;
+              }
+  
+              for (var i = 0, len = options.length; i < len; ++i) {
+                  var option = document.createElement('option');
+                  option.textContent = options[i].text;
+                  option.value = options[i].value;
+                  menu.appendChild(option);
+              }
+          },
+          reset : function() {
+          }
+      };
+  
+  }());
+  </script>
+   
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.69/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.69/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+ 
+   <!--animated logo-->
+   <link rel="stylesheet" href="logo1.css">
+   <!--wetter legende style start-->
+<style>
+  h1 {
+    margin-bottom: 20px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #ddd;
+    font-size: 32px;
+    font-weight: 100;
+    color: #ffffff;
+  }
+  .checkbox {
+    position: relative;
+    width: 1rem;
+    height: 1rem;
+    margin-right: .75rem;
+    cursor: pointer;
+    -webkit-appearance: none;
+       -moz-appearance: none;
+            appearance: none;
+    outline: 0;
+  }
+  .checkbox:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    border: 2px solid #ffffff;
+    -webkit-transition: all 0.3s ease-in-out;
+    transition: all 0.3s ease-in-out;
+  }
+  .checkbox:checked:before {
+    height: 50%;
+    -webkit-transform: rotate(-45deg);
+            transform: rotate(-45deg);
+    border-top-style: none;
+    border-right-style: none;
+  }
+  .checkbox--red:checked:before {
+    border-color: #f44336;
+  }
+  .checkbox--pink:checked:before {
+    border-color: #e91e63;
+  }
+  
+  
+  .trigger input[type="checkbox"] + span {
+    visibility: hidden;
+    opacity: 0;
+    -webkit-transition: visibility 0s linear 0.33s, opacity 0.33s linear;
+    transition: visibility 0s linear 0.33s, opacity 0.33s linear;
+  }
+  .trigger input[type="checkbox"]:checked + span {
+    visibility: visible;
+    opacity: 1;
+    -webkit-transition-delay: 0s;
+            transition-delay: 0s;
+  }
+  
+  .msg {
+  
+    display: block;
+    margin-top: 8px;
+    padding: 8px 12px;
+  }
+</style>
+   <!--wetter legende style finish-->
+   
+</head>
+<body >
+  <!--toolbar style start-->
+<style>
+      @import url(../templates/bucket.css);
+
+      #toolbar {
+        background: rgba(42, 42, 42, 0.8);
+        padding: 4px;
+        border-radius: 4px;
+      }
+
+      #toolbar input {
+        vertical-align: middle;
+        padding-top: 2px;
+        padding-bottom: 2px;
+      }
+
+      #toolbar table tr {
+        transform: translateY(0);
+        transition: transform 0.4s ease-out;
+      }
+
+      #toolbar table tr.up {
+        transform: translateY(33px);
+        transition: none;
+      }
+
+      #toolbar table tr.down {
+        transform: translateY(-33px);
+        transition: none;
+      }
+</style>
+<!--toolbar style start-->
+<div id="cesiumContainer" style="position: fixed;  width: 100%;  height: 100%;  left: 0;  top: 0;">
+    <!--aniamtedlogo start-->
+    <div class="loader" style="position: absolute; left: 30px; z-index: 1;">
+      <div class="face">
+        <div class="circle"></div>
+      </div>
+      <div class="face">
+        <div class="circle"></div>
+      </div>
+      <img src="logo3.png" width="28" height="28">
+    </div>
+    <!--aniamtedlogo finish-->
+    <!--wetter legend start-->
+<div style=" position: absolute; z-index: 1;  right: 3%; top: 5%;">
+  <div>
+    <h1>Show / Hide Legend</h1>
+    <label class="trigger" style="color: #ffffff;">
+      <input type="checkbox" class="checkbox"/> Wetter legende
+      <span class="msg">
+        <p style="color: #ffffff;">DWD: Deutsche Wetterdienst</p>
+        <p style="color: #ffffff;">RBSN: DWD Stationen im Regional Basic Synoptic Network</p>
+        <img src="wetter_legend.png">
+      </span>
+    </label>
+  </div>
+  </div>
+  <!--wetter legend finish-->
+  
+  <div id="toolbar"  style="position: absolute; left: 1%; top: 10%; z-index: 1;">
+    <table>
+      <tbody data-bind="foreach: layers" style="color: #ffffff;">
+        <tr data-bind="css: { up: $parent.upLayer === $data, down: $parent.downLayer === $data }">
+          <td><input type="checkbox" data-bind="checked: show"></td>
+          <td>
+            <span data-bind="text: name, visible: !$parent.isSelectableLayer($data)"></span>
+            <select data-bind="visible: $parent.isSelectableLayer($data), options: $parent.baseLayers, optionsText: 'name', value: $parent.selectedLayer"></select>
+          </td>
+          <td>
+            <input type="range" min="0" max="1" step="0.01" data-bind="value: alpha, valueUpdate: 'input'">
+          </td>
+          <td>
+            <button type="button" class="cesium-button" data-bind="click: function() { $parent.raise($data, $index()); }, visible: $parent.canRaise($index())" style="color: #C5014B;">
+              ▲
+            </button>
+          </td>
+          <td>
+            <button type="button" class="cesium-button" data-bind="click: function() { $parent.lower($data, $index()); }, visible: $parent.canLower($index())" style="color: #C5014B;">
+              ▼
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<script>
+
+Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJmMDlkNTdjMy04ZjkzLTRmZDItODcyZS1kZmVhZGM4ZmU3MDAiLCJpZCI6Mjk3NDcsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1OTI1NTM1NTF9.jxCBGAd8p4JXuxCONOPjml-J21XU_ioAMaMDsDQ46ko";
+
+var viewer = new Cesium.Viewer("cesiumContainer");
+var imageryLayers = viewer.imageryLayers;
+
+var viewModel = {
+  layers: [],
+  baseLayers: [],
+  upLayer: null,
+  downLayer: null,
+  selectedLayer: null,
+  isSelectableLayer: function (layer) {
+    return this.baseLayers.indexOf(layer) >= 0;
+  },
+  raise: function (layer, index) {
+    imageryLayers.raise(layer);
+    viewModel.upLayer = layer;
+    viewModel.downLayer = viewModel.layers[Math.max(0, index - 1)];
+    updateLayerList();
+    window.setTimeout(function () {
+      viewModel.upLayer = viewModel.downLayer = null;
+    }, 10);
+  },
+  lower: function (layer, index) {
+    imageryLayers.lower(layer);
+    viewModel.upLayer =
+      viewModel.layers[
+        Math.min(viewModel.layers.length - 1, index + 1)
+      ];
+    viewModel.downLayer = layer;
+    updateLayerList();
+    window.setTimeout(function () {
+      viewModel.upLayer = viewModel.downLayer = null;
+    }, 10);
+  },
+  canRaise: function (layerIndex) {
+    return layerIndex > 0;
+  },
+  canLower: function (layerIndex) {
+    return layerIndex >= 0 && layerIndex < imageryLayers.length - 1;
+  },
+};
+var baseLayers = viewModel.baseLayers;
+
+Cesium.knockout.track(viewModel);
+
+function setupLayers() {
+
+  //Satellitenbild:
+  addAdditionalLayerOption(
+    "Satellitenbild (3 stündige Auflieferung)",
+    new Cesium.WebMapServiceImageryProvider({
+      url:
+        "https://maps.dwd.de/geoserver/ows?SERVICE=WMS&",
+      layers: "dwd:SAT_EU_central_RGB_cloud",
+          parameters: {
+        transparent: "true",
+        format: "image/png",
+      },
+    })
+  );
+
+  //Beobachtungen:
+  addAdditionalLayerOption(
+    "Relative Feuchte an RBSN Stationen",
+    new Cesium.WebMapServiceImageryProvider({
+      url:
+        "https://maps.dwd.de/geoserver/ows?SERVICE=WMS&",
+      layers: "dwd:RBSN_RH",
+          parameters: {
+        transparent: "true",
+        format: "image/png",
+      },
+    })
+  );
+  //Beobachtungen:
+  addAdditionalLayerOption(
+    "Windgeschwindigkeit an RBSN Stationen",
+    new Cesium.WebMapServiceImageryProvider({
+      url:
+        "https://maps.dwd.de/geoserver/ows?SERVICE=WMS&",
+      layers: "dwd:RBSN_FF",
+          parameters: {
+        transparent: "true",
+        format: "image/png",
+      },
+    })
+  );
+
+
+  //Radar:
+  //layer5 in Radar-Radarkomposit (W4)
+  addAdditionalLayerOption(
+    "Auf 30 Tage aufsummierte angeeichte Radardaten",
+    new Cesium.WebMapServiceImageryProvider({
+      url:
+        "https://maps.dwd.de/geoserver/ows?SERVICE=WMS&",
+      layers: "dwd:RADOLAN-W4",
+      parameters: {
+        transparent: "true",
+        format: "image/png",
+      },
+    })
+  );
+  //Warnungen:
+  //layer1 in Warnungen: Warngebiete des DWD für Binnenseen. Copyright GeoBasis-DE / BKG (http://www.bkg.bund.de) 2019 (Daten modifiziert):
+  addAdditionalLayerOption(
+    "Warngebiete des DWD für Binnenseen",
+    new Cesium.WebMapServiceImageryProvider({
+      url:
+        "https://maps.dwd.de/geoserver/ows?SERVICE=WMS&",
+      layers: "dwd:Warngebiete_Binnenseen",
+      parameters: {
+        transparent: "true",
+        format: "image/png",
+      },
+    })
+  );
+  //Warnungen:
+  //layer3 in Warnungen: Warngebiete des DWD, basierend auf den Geodaten für deutsche Landkreise. Abweichende Unterteilung in Warngebiete z.B. im Küstenbereich. Copyright GeoBasis-DE / BKG (http://www.bkg.bund.de) 2019 (Daten modifiziert):
+    addAdditionalLayerOption(
+    "Warngebiete des DWD auf Kreisbasis",
+    new Cesium.WebMapServiceImageryProvider({
+      url:
+        "https://maps.dwd.de/geoserver/ows?SERVICE=WMS&",
+      layers: "dwd:Warngebiete_Kreise",
+      parameters: {
+        transparent: "true",
+        format: "image/png",
+      },
+    })
+  );
+  //Warnungen:
+  //layer4 in Warnungen: Warngebiete des DWD für Küsten. Copyright GeoBasis-DE / BKG (http://www.bkg.bund.de) 2019 (Daten modifiziert):
+  addAdditionalLayerOption(
+    "Warngebiete des DWD für Küsten",
+    new Cesium.WebMapServiceImageryProvider({
+      url:
+        "https://maps.dwd.de/geoserver/ows?SERVICE=WMS&",
+      layers: "dwd:Warngebiete_Kueste",
+      parameters: {
+        transparent: "true",
+        format: "image/png",
+      },
+    })
+  );
+  //Warnungen:
+  //layer10 in Warnungen: aktuelle amtliche Wetterwarnungen und Vorabinformationen auf Landkeisebene:
+  addAdditionalLayerOption(
+    "Wetterwarnungen und Vorabinformationen auf Landkreisebene",
+    new Cesium.WebMapServiceImageryProvider({
+      url:
+        "https://maps.dwd.de/geoserver/ows?SERVICE=WMS&",
+      layers: "dwd:Warnungen_Landkreise",
+      parameters: {
+        transparent: "true",
+        format: "image/png",
+      },
+    })
+  );
+  
+  //Radar:
+  //layer3 in Radar- Radarvorhersage (Basis RX) :
+  addAdditionalLayerOption(
+    "2 stündige Radarvorhersage",
+    new Cesium.WebMapServiceImageryProvider({
+      url:
+        "https://maps.dwd.de/geoserver/ows?SERVICE=WMS&",
+      layers: "dwd:FX-Produkt",
+      parameters: {
+        transparent: "true",
+        format: "image/png",
+      },
+    })
+  );
+
+    //Beobachtungen:
+    addAdditionalLayerOption(
+    "2m Temperatur an RBSN Stationen",
+    new Cesium.WebMapServiceImageryProvider({
+      url:
+        "https://maps.dwd.de/geoserver/ows?SERVICE=WMS&",
+      layers: "dwd:RBSN_T2m",
+          parameters: {
+        transparent: "true",
+        format: "image/png",
+      },
+    })
+  );
+
+}
+
+function addBaseLayerOption(name, imageryProvider) {
+  var layer;
+  if (typeof imageryProvider === "undefined") {
+    layer = imageryLayers.get(0);
+    viewModel.selectedLayer = layer;
+  } else {
+    layer = new Cesium.ImageryLayer(imageryProvider);
+  }
+
+  layer.name = name;
+  baseLayers.push(layer);
+}
+
+function addAdditionalLayerOption(name, imageryProvider, alpha, show) {
+  var layer = imageryLayers.addImageryProvider(imageryProvider);
+  layer.alpha = Cesium.defaultValue(alpha, 0.5);
+  layer.show = Cesium.defaultValue(show, true);
+  layer.name = name;
+  Cesium.knockout.track(layer, ["alpha", "show", "name"]);
+}
+
+function updateLayerList() {
+  var numLayers = imageryLayers.length;
+  viewModel.layers.splice(0, viewModel.layers.length);
+  for (var i = numLayers - 1; i >= 0; --i) {
+    viewModel.layers.push(imageryLayers.get(i));
+  }
+}
+
+setupLayers();
+updateLayerList();
+
+//Bind the viewModel to the DOM elements of the UI that call for it.
+var toolbar = document.getElementById("toolbar");
+Cesium.knockout.applyBindings(viewModel, toolbar);
+
+Cesium.knockout
+  .getObservable(viewModel, "selectedLayer")
+  .subscribe(function (baseLayer) {
+    // Handle changes to the drop-down base layer selector.
+    var activeLayerIndex = 0;
+    var numLayers = viewModel.layers.length;
+    for (var i = 0; i < numLayers; ++i) {
+      if (viewModel.isSelectableLayer(viewModel.layers[i])) {
+        activeLayerIndex = i;
+        break;
+      }
+    }
+    var activeLayer = viewModel.layers[activeLayerIndex];
+    var show = activeLayer.show;
+    var alpha = activeLayer.alpha;
+    imageryLayers.remove(activeLayer, false);
+    imageryLayers.add(baseLayer, numLayers - activeLayerIndex - 1);
+    baseLayer.show = show;
+    baseLayer.alpha = alpha;
+    updateLayerList();
+  });
+
+  viewer.camera.flyTo(
+
+{ destination : Cesium.Cartesian3.fromDegrees(10.207288742065426, 50.96308269929881, 2500000) }
+);
+</script>
+
+</body>
+</html>
